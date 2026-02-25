@@ -63,6 +63,9 @@ interface CoursyApi {
 
     @DELETE("auth/account")
     suspend fun deleteAccount(): MessageResponse
+
+    @GET("users")
+    suspend fun getUsers(): UsersResponse
 }
 
 data class LoginRequest(
@@ -143,4 +146,17 @@ data class UpdateProfileRequest(
     val bio: String? = null,
     @SerializedName("university")
     val university: String? = null
+)
+
+data class UsersResponse(
+    val users: List<UserItemDto>
+)
+
+data class UserItemDto(
+    val id: String,
+    val name: String,
+    val bio: String?,
+    @SerializedName("profile_image")
+    val profileImage: String?,
+    val university: String?
 )

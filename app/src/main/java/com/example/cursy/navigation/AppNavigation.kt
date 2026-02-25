@@ -47,6 +47,8 @@ import com.example.cursy.features.profile.presentation.viewmodels.ProfileViewMod
 import com.example.cursy.features.Register.presenstation.screens.FormRegister
 import com.example.cursy.features.settings.presentation.screens.SettingsScreen
 import com.example.cursy.features.settings.presentation.viewmodels.SettingsViewModel
+import com.example.cursy.features.explore.presentation.viewmodels.ExploreViewModel
+import com.example.cursy.features.explore.presentation.screens.ExploreScreen
 import kotlinx.coroutines.launch
 
 private val GreenPrimary = Color(0xFF2ECC71)
@@ -152,6 +154,12 @@ fun AppNavigation(
                 )
             }
 
+            // Pantalla de Explorar
+            composable(Screen.Explore.route) {
+                val viewModel: ExploreViewModel = hiltViewModel()
+                ExploreScreen(viewModel = viewModel)
+            }
+
             // Pantalla de Perfil
             composable(Screen.Profile.route) {
                 val viewModel: ProfileViewModel = hiltViewModel()
@@ -189,8 +197,6 @@ fun AppNavigation(
                     }
                 )
             }
-
-
 
             // Pantalla de Configuración
             composable(Screen.Settings.route) {
@@ -368,8 +374,11 @@ fun BottomNavigationBar(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
+    // Se agrega Screen.Explore.route para mostrar el bottom bar en Explore
     val showBottomBar = currentDestination?.route in listOf(
-        Screen.Feed.route, Screen.Profile.route
+        Screen.Feed.route,
+        Screen.Explore.route,
+        Screen.Profile.route
     )
 
     if (showBottomBar) {
@@ -383,8 +392,8 @@ fun BottomNavigationBar(navController: NavHostController) {
                     label = { Text(item.label) },
                     selected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
                     onClick = {
-                        // Explorar y Chats no navegan a ningún lado por ahora
-                        if (item.route != Screen.Explore.route && item.route != Screen.ChatList.route) {
+                        // Solo Chats no navega por ahora; Feed, Explore y Profile sí
+                        if (item.route != Screen.ChatList.route) {
                             navController.navigate(item.route) {
                                 popUpTo(navController.graph.findStartDestination().id) {
                                     saveState = true
