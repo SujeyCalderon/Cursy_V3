@@ -9,6 +9,7 @@ data class UsersResponse(
 data class UserItemDto(
     val id: String,
     val name: String,
+    val email: String,                    // necesario para ChatRepositoryImpl.searchUsers()
     val bio: String?,
     @SerializedName("profile_image")
     val profileImage: String?,
