@@ -4,6 +4,7 @@ import com.example.cursy.features.course.data.remote.dto.CourseDetailResponse
 import com.example.cursy.features.feed.data.remote.dto.FeedResponse
 import com.example.cursy.features.profile.data.remote.dto.MyCoursesResponse
 import com.example.cursy.features.profile.data.remote.dto.ProfileResponse
+import com.example.cursy.features.explore.data.remote.dto.UsersResponse
 import com.google.gson.annotations.SerializedName
 import okhttp3.MultipartBody
 import retrofit2.http.*
