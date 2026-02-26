@@ -69,6 +69,7 @@ sealed class BottomNavItem(
 
 @Composable
 fun AppNavigation(
+    startDestination: String = Screen.Login.route,
     isDarkMode: Boolean = false,
     onToggleDarkMode: (Boolean) -> Unit = {}
 ) {
@@ -84,7 +85,7 @@ fun AppNavigation(
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Login.route,
+            startDestination = startDestination,
             modifier = Modifier.padding(innerPadding)
         ) {
             // Pantalla de Login
