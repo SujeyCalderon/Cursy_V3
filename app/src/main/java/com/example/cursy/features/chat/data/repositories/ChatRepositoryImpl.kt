@@ -113,7 +113,7 @@ class ChatRepositoryImpl @Inject constructor(
                     id = userResponse.id,
                     name = userResponse.name,
                     email = userResponse.email,
-                    profileImage = userResponse.profile_image ?: "",
+                    profileImage = userResponse.profileImage ?: "",
                     bio = userResponse.bio
                 )
             })
