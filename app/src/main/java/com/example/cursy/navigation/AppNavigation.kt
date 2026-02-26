@@ -49,6 +49,11 @@ import com.example.cursy.features.settings.presentation.screens.SettingsScreen
 import com.example.cursy.features.settings.presentation.viewmodels.SettingsViewModel
 import kotlinx.coroutines.launch
 
+import com.example.cursy.features.chat.presentation.screens.ChatListScreen
+import com.example.cursy.features.chat.presentation.screens.MessageScreen
+import com.example.cursy.features.chat.presentation.screens.UserSearchScreen
+import com.example.cursy.features.chat.presentation.viewmodels.ChatViewModel
+
 private val GreenPrimary = Color(0xFF2ECC71)
 
 sealed class BottomNavItem(
@@ -349,7 +354,52 @@ fun AppNavigation(
                     onCreateCourse = {
                         navController.navigate(Screen.CreateCourse.route)
                     },
-                    hasPublishedCourse = hasPublishedCourse
+                )
+            }
+
+            // Pantalla de Lista de Chats
+            composable(Screen.ChatList.route) {
+                val chatViewModel: ChatViewModel = hiltViewModel()
+                ChatListScreen(
+                    viewModel = chatViewModel,
+                    onChatClick = { conversationId ->
+                        navController.navigate(Screen.Message.createRoute(conversationId))
+                    },
+                    onNewChatClick = {
+                        navController.navigate(Screen.UserSearch.route)
+                    },
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
+
+            // Pantalla de Búsqueda de Usuarios
+            composable(Screen.UserSearch.route) {
+                val chatViewModel: ChatViewModel = hiltViewModel()
+                UserSearchScreen(
+                    viewModel = chatViewModel,
+                    onUserClick = { conversationId ->
+                        android.util.Log.d("AppNavigation", "Navigating to MessageScreen for ID: $conversationId")
+                        navController.navigate(Screen.Message.createRoute(conversationId)) {
+                            popUpTo(Screen.ChatList.route)
+                        }
+                    },
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
+
+            // Pantalla de Mensajes
+            composable(
+                route = Screen.Message.route,
+                arguments = listOf(
+                    navArgument("conversationId") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val conversationId = backStackEntry.arguments?.getString("conversationId") ?: return@composable
+                val chatViewModel: ChatViewModel = hiltViewModel()
+                MessageScreen(
+                    viewModel = chatViewModel,
+                    conversationId = conversationId,
+                    onBackClick = { navController.popBackStack() }
                 )
             }
         }
@@ -369,7 +419,7 @@ fun BottomNavigationBar(navController: NavHostController) {
     val currentDestination = navBackStackEntry?.destination
 
     val showBottomBar = currentDestination?.route in listOf(
-        Screen.Feed.route, Screen.Profile.route
+        Screen.Feed.route, Screen.Profile.route, Screen.ChatList.route, Screen.Explore.route
     )
 
     if (showBottomBar) {
@@ -383,8 +433,8 @@ fun BottomNavigationBar(navController: NavHostController) {
                     label = { Text(item.label) },
                     selected = currentDestination?.hierarchy?.any { it.route == item.route } == true,
                     onClick = {
-                        // Explorar y Chats no navegan a ningún lado por ahora
-                        if (item.route != Screen.Explore.route && item.route != Screen.ChatList.route) {
+                        // Explorar no navega a ningún lado por ahora
+                        if (item.route != Screen.Explore.route) {
                             navController.navigate(item.route) {
                                 popUpTo(navController.graph.findStartDestination().id) {
                                     saveState = true
