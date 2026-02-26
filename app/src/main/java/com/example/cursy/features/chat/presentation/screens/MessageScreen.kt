@@ -162,7 +162,10 @@ fun MessageBubble(
             Spacer(modifier = Modifier.width(8.dp))
         }
 
-        Column(horizontalAlignment = if (isMine) Alignment.End else Alignment.Start) {
+        Column(
+            horizontalAlignment = if (isMine) Alignment.End else Alignment.Start,
+            modifier = Modifier.widthIn(max = 280.dp)
+        ) {
             Surface(
                 color = when {
                     message.status == MessageStatus.FAILED -> Color(0xFFFFCDD2)

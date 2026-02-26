@@ -24,4 +24,10 @@ interface ChatDao {
 
     @Query("DELETE FROM messages WHERE id = :messageId")
     suspend fun deleteMessage(messageId: String)
+
+    @Query("DELETE FROM messages WHERE conversationId = :convId")
+    suspend fun clearServerMessages(convId: String)
+
+    @Query("SELECT COUNT(*) FROM messages WHERE conversationId = :convId AND senderId = :senderId AND content = :content AND id NOT LIKE 'local_%'")
+    suspend fun countDuplicates(convId: String, senderId: String, content: String): Int
 }
