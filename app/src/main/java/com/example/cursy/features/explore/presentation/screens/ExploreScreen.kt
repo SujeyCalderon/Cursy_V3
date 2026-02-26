@@ -29,13 +29,10 @@ import coil.compose.AsyncImage
 import com.example.cursy.features.explore.domain.entities.UserItem
 import com.example.cursy.features.explore.presentation.viewmodels.ExploreViewModel
 
-private val Green400    = Color(0xFF2ECC71)
-private val Green600    = Color(0xFF27AE60)
-private val Green50     = Color(0xFFE8F8F0)
-private val Surface     = Color(0xFFF7F8FA)
-private val CardBg      = Color(0xFFFFFFFF)
-private val TextPrimary = Color(0xFF111827)
-private val TextSub     = Color(0xFF6B7280)
+// Solo los verdes son fijos — todo lo demás viene del tema
+private val Green400 = Color(0xFF2ECC71)
+private val Green600 = Color(0xFF27AE60)
+private val Green50  = Color(0xFFE8F8F0)
 
 @Composable
 fun ExploreScreen(
@@ -47,7 +44,7 @@ fun ExploreScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Surface)
+            .background(MaterialTheme.colorScheme.background)  // ← tema
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
 
@@ -110,10 +107,15 @@ private fun ExploreHeader(
     query: String,
     onQueryChange: (String) -> Unit
 ) {
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val bgColor      = MaterialTheme.colorScheme.background
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Brush.verticalGradient(colors = listOf(Color.White, Surface)))
+            .background(
+                Brush.verticalGradient(colors = listOf(surfaceColor, bgColor))  // ← tema
+            )
             .padding(horizontal = 20.dp)
             .padding(top = 20.dp, bottom = 16.dp)
     ) {
@@ -122,31 +124,44 @@ private fun ExploreHeader(
                 text = "Explorar",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = TextPrimary,
+                color = MaterialTheme.colorScheme.onSurface,  // ← tema
                 letterSpacing = (-0.5).sp
             )
             Text(
                 text = "Descubre personas increíbles",
                 fontSize = 13.sp,
-                color = TextSub,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,  // ← tema
                 modifier = Modifier.padding(top = 2.dp, bottom = 16.dp)
             )
             OutlinedTextField(
                 value = query,
                 onValueChange = onQueryChange,
                 placeholder = {
-                    Text("Buscar por nombre o interés...", color = Color(0xFFB0B7C3), fontSize = 14.sp)
+                    Text(
+                        "Buscar por nombre o interés...",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        fontSize = 14.sp
+                    )
                 },
                 leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFFB0B7C3), modifier = Modifier.size(18.dp))
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier.size(18.dp)
+                    )
                 },
-                modifier = Modifier.fillMaxWidth().height(50.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor      = Green400,
                     unfocusedBorderColor    = Color.Transparent,
-                    focusedContainerColor   = Color.White,
-                    unfocusedContainerColor = Color.White,
+                    focusedContainerColor   = MaterialTheme.colorScheme.surfaceVariant,   // ← tema
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,   // ← tema
+                    focusedTextColor        = MaterialTheme.colorScheme.onSurface,        // ← tema
+                    unfocusedTextColor      = MaterialTheme.colorScheme.onSurface,        // ← tema
                 ),
                 singleLine = true,
                 textStyle = LocalTextStyle.current.copy(fontSize = 14.sp)
@@ -186,10 +201,12 @@ private fun UserCard(
                 elevation = 2.dp,
                 shape = RoundedCornerShape(20.dp),
                 ambientColor = Color.Black.copy(alpha = 0.05f),
-                spotColor = Color.Black.copy(alpha = 0.05f)
+                spotColor    = Color.Black.copy(alpha = 0.05f)
             ),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
+        shape  = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface  // ← tema
+        ),
         elevation = CardDefaults.cardElevation(0.dp)
     ) {
         Column(
@@ -202,7 +219,6 @@ private fun UserCard(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Avatar con borde gradiente
                 Box(contentAlignment = Alignment.BottomEnd) {
                     Box(
                         modifier = Modifier
@@ -215,14 +231,16 @@ private fun UserCard(
                             )
                             .padding(2.dp)
                             .clip(CircleShape)
-                            .background(Color.LightGray)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)  // ← tema
                     ) {
                         AsyncImage(
                             model = user.profileImage.ifEmpty {
                                 "https://ui-avatars.com/api/?name=${user.name}&background=2ECC71&color=fff&size=100"
                             },
                             contentDescription = user.name,
-                            modifier = Modifier.fillMaxSize().clip(CircleShape),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape),
                             contentScale = ContentScale.Crop
                         )
                     }
@@ -231,7 +249,7 @@ private fun UserCard(
                         modifier = Modifier
                             .size(13.dp)
                             .clip(CircleShape)
-                            .background(Color.White),
+                            .background(MaterialTheme.colorScheme.surface),  // ← tema (borde del punto)
                         contentAlignment = Alignment.Center
                     ) {
                         Box(
@@ -245,13 +263,12 @@ private fun UserCard(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                // Nombre, universidad y bio
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = user.name,
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp,
-                        color = TextPrimary,
+                        color = MaterialTheme.colorScheme.onSurface,  // ← tema
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -270,7 +287,7 @@ private fun UserCard(
                         Text(
                             text = user.bio,
                             fontSize = 12.sp,
-                            color = TextSub,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,  // ← tema
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                             lineHeight = 16.sp,
@@ -287,7 +304,6 @@ private fun UserCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Botón Seguir ocupa todo el espacio disponible
                 OutlinedButton(
                     onClick = { },
                     modifier = Modifier
@@ -308,7 +324,6 @@ private fun UserCard(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                // Ícono mensaje — igual al original
                 IconButton(
                     onClick = { onMessageClick(user.id) },
                     modifier = Modifier.size(36.dp)
@@ -331,8 +346,18 @@ private fun EmptyState() {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text("🔍", fontSize = 48.sp)
             Spacer(Modifier.height(12.dp))
-            Text("No se encontraron usuarios", color = TextSub, fontSize = 15.sp, fontWeight = FontWeight.Medium)
-            Text("Intenta con otro término", color = Color(0xFFB0B7C3), fontSize = 13.sp, modifier = Modifier.padding(top = 4.dp))
+            Text(
+                "No se encontraron usuarios",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium
+            )
+            Text(
+                "Intenta con otro término",
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                fontSize = 13.sp,
+                modifier = Modifier.padding(top = 4.dp)
+            )
         }
     }
 }
@@ -343,7 +368,11 @@ private fun ErrorState(message: String, onRetry: () -> Unit) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text("x", fontSize = 48.sp)
             Spacer(Modifier.height(12.dp))
-            Text(message, color = TextSub, fontSize = 14.sp)
+            Text(
+                message,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 14.sp
+            )
             Spacer(Modifier.height(16.dp))
             Button(
                 onClick = onRetry,
