@@ -74,7 +74,7 @@ fun UserSearchScreen(
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 shape = CircleShape,
                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                    unfocusedBorderColor = Color.LightGray,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
                     focusedBorderColor = Color(0xFF00D186)
                 )
             )
@@ -107,7 +107,7 @@ fun UserItem(user: ChatUser, onClick: () -> Unit) {
             modifier = Modifier
                 .size(50.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFF0F0F0)),
+                .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
             AsyncImage(

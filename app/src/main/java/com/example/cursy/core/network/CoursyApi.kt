@@ -76,6 +76,9 @@ interface CoursyApi {
     @GET("users")
     suspend fun getUsers(@Query("q") query: String? = null): UsersResponse
 
+    @GET("users/online")
+    suspend fun getOnlineUsers(): OnlineUsersResponse
+
     @POST("chats/{id}/messages")
     suspend fun sendMessage(
         @Path("id") conversationId: String,
@@ -86,6 +89,11 @@ interface CoursyApi {
 data class UsersResponse(
     val users: List<UserResponse>,
     val count: Int
+)
+
+data class OnlineUsersResponse(
+    @SerializedName("online_users")
+    val onlineUsers: List<String>
 )
 
 data class SendMessageRequest(
