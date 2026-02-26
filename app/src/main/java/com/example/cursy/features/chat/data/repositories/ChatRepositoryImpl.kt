@@ -46,6 +46,7 @@ class ChatRepositoryImpl @Inject constructor(
     private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val conversationReceiverCache = java.util.concurrent.ConcurrentHashMap<String, String>()
 
+
     // Observa los mensajes desde Room (fuente de verdad)
     override fun observeMessagesFromDb(conversationId: String): Flow<List<Message>> {
         return chatDao.getMessagesByConversation(conversationId).map { entities ->
@@ -74,6 +75,8 @@ class ChatRepositoryImpl @Inject constructor(
             val response = api.getMessages(conversationId)
             val messages = response.map { it.toDomain() }
 
+            // Limpiar historial local del servidor antes de insertar lo nuevo
+            chatDao.clearServerMessages(conversationId)
             chatDao.insertMessages(messages.map { it.toEntity() })
 
             val myId = authManager.getCurrentUserId()
@@ -152,14 +155,18 @@ class ChatRepositoryImpl @Inject constructor(
                     }
 
                     val resolvedSenderId = wsMessage.senderId
-                        ?: if (wsMessage.receiverId != myId) myId else (conversationReceiverCache[wsMessage.conversationId] ?: "")
+                        ?: if (wsMessage.receiverId != myId) myId else (conversationReceiverCache[wsMessage.conversationId ?: ""] ?: "")
 
-                    if (resolvedSenderId.isNullOrEmpty()) return
+                    val convId = wsMessage.conversationId
+                    if (resolvedSenderId.isNullOrEmpty() || convId.isNullOrEmpty()) return
 
-                    // Guardar mensaje entrante en Room
+                    // Si el mensaje lo enviamos nosotros, lo ignoramos porque ya está en Room
+                    // gracias a la inserción optimista (estado PENDING).
+                    if (resolvedSenderId == myId) return
+
                     val domainMessage = Message(
                         id = java.util.UUID.randomUUID().toString().replace("-", "").take(24),
-                        conversationId = wsMessage.conversationId,
+                        conversationId = convId,
                         senderId = resolvedSenderId,
                         content = wsMessage.content,
                         createdAt = java.util.Date(),
@@ -168,7 +175,11 @@ class ChatRepositoryImpl @Inject constructor(
                     )
 
                     repositoryScope.launch {
-                        chatDao.insertMessage(domainMessage.toEntity())
+                        // Verificar si este mismo mensaje acaba de ser insertado
+                        val dupes = chatDao.countDuplicates(convId, resolvedSenderId, wsMessage.content)
+                        if (dupes == 0) {
+                            chatDao.insertMessage(domainMessage.toEntity())
+                        }
                     }
 
                 } catch (e: Exception) {
@@ -198,6 +209,19 @@ class ChatRepositoryImpl @Inject constructor(
 
     override fun observeUserStatuses(): StateFlow<Map<String, Boolean>> {
         return _userStatusesFlow.asStateFlow()
+    }
+
+    override suspend fun fetchOnlineUsers() {
+        try {
+            val response = api.getOnlineUsers()
+            val myId = authManager.getCurrentUserId()
+            val onlineMap = response.onlineUsers
+                .filter { it != myId }
+                .associateWith { true }
+            _userStatusesFlow.update { it + onlineMap }
+        } catch (e: Exception) {
+            Log.e("ChatWS", "Error al obtener usuarios en línea", e)
+        }
     }
 
     // Envía un mensaje con actualización optimista y rollback

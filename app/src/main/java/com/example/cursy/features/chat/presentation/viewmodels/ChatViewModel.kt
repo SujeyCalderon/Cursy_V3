@@ -49,6 +49,7 @@ class ChatViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ChatUiState(currentUserId = authManager.getCurrentUserId()))
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
+
     private val _navigationEvent = Channel<String>(Channel.BUFFERED)
     val navigationEvent = _navigationEvent.receiveAsFlow()
 
@@ -59,6 +60,11 @@ class ChatViewModel @Inject constructor(
         loadMyProfile()
         repository.startSession()
         observeGlobalStatuses()
+        // Respaldo REST para obtener estado en línea (el snapshot WebSocket puede perderse)
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(1000)
+            repository.fetchOnlineUsers()
+        }
     }
 
     // Observa el estado en línea/desconectado de los usuarios

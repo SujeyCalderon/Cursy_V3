@@ -16,6 +16,7 @@ interface ChatRepository {
     fun startSession()
     fun endSession()
     fun observeUserStatuses(): StateFlow<Map<String, Boolean>>
+    suspend fun fetchOnlineUsers()
     suspend fun sendMessage(conversationId: String, receiverId: String, content: String): Result<Unit>
 
     // Observar mensajes desde Room (fuente de verdad)
